@@ -2,14 +2,18 @@ create schema if not exists securecapita;
 
 set names 'UTF8MB4';
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 DROP TABLE IF EXISTS UserEvents;
-DROP TABLE IF EXISTS AccountVerification;
+DROP TABLE IF EXISTS AccountVerifications;
 DROP TABLE IF EXISTS ResetPasswordVerification;
 DROP TABLE IF EXISTS TwoFactorVerification;
 DROP TABLE IF EXISTS UserRoles;
 DROP TABLE IF EXISTS Roles;
 DROP TABLE IF EXISTS Events;
 DROP TABLE IF EXISTS Users;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 
 create table Users
@@ -40,6 +44,11 @@ create table Roles
     constraint UQ_Roles_Name unique (name)
 );
 
+insert into Roles (name, permission)
+values ('ROLE_USER', 'READ:USER,READ:CUSTOMER'),
+       ('ROLE_MANAGER', 'READ:USER,READ:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER'),
+       ('ROLE_ADMIN', 'READ:USER,READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER'),
+       ('ROLE_SYSADMIN', 'READ:USER,READ:CUSTOMER,CREATE:USER,CREATE:CUSTOMER,UPDATE:USER,UPDATE:CUSTOMER,DELETE:USER,DELETE:CUSTOMER');
 
 create table UserRoles
 (
@@ -75,7 +84,7 @@ CREATE TABLE UserEvents
 );
 
 
-create table AccountVerification
+create table AccountVerifications
 (
     id      bigint unsigned not null auto_increment primary key,
     user_id bigint unsigned not null,
