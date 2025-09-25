@@ -1,0 +1,9 @@
+Spring Security
+requests-> Security filters
+
+Security Filter:
+ UsernamePasswordAuthenticationFilter: Filters->
+    Security Flow:
+      Provider Manager Authentication Manager->
+        DaoAuthenticationProvider Authentication Provider->
+          InMemoryUserDetailsManager User Details Service
