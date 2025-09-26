@@ -35,15 +35,9 @@ public class UserResource {
                 new UsernamePasswordAuthenticationToken(loginFrom.getEmail(),loginFrom.getPassword())
         );
         UserDTO userDTO=userService.getUserByEmail(loginFrom.getEmail());
-        return ResponseEntity.ok()
-                .body(HttpResponse.builder()
-                        .timeStamp(LocalDateTime.now().toString())
-                        .data(Map.of("user", userDTO))
-                        .message("Login Success")
-                        .status(HttpStatus.OK)
-                        .statusCode(HttpStatus.OK.value())
-                        .build());
+        return userDTO.isUsingMfa() ? sendVerificationCode(userDTO) : sendResponse(userDTO);
     }
+
 
     @PostMapping("/register")
     public ResponseEntity<HttpResponse> createUser(
@@ -63,6 +57,29 @@ public class UserResource {
         return URI.create(ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/user/get/<userId>").toUriString());
+    }
+
+    private ResponseEntity<HttpResponse> sendResponse(UserDTO user) {
+        return ResponseEntity.ok()
+                .body(HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .data(Map.of("user", user))
+                        .message("Login Success")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+    }
+
+    private ResponseEntity<HttpResponse> sendVerificationCode(UserDTO userDTO) {
+        userService.sendVerificationCode(userDTO);
+        return ResponseEntity.ok()
+                .body(HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .data(Map.of("user", userDTO))
+                        .message("Verification Code sent")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
     }
 
 }

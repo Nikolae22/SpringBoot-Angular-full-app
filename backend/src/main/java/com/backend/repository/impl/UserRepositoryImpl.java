@@ -3,12 +3,14 @@ package com.backend.repository.impl;
 import com.backend.domain.Role;
 import com.backend.domain.User;
 import com.backend.domain.UserPrincipal;
+import com.backend.dto.UserDTO;
 import com.backend.exception.ApiException;
 import com.backend.repository.RoleRepository;
 import com.backend.repository.UserRepository;
 import com.backend.rolemapper.UserRowMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -22,20 +24,21 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.backend.enumeration.RoleType.ROLE_USER;
 import static com.backend.enumeration.VerificationType.ACCOUNT;
 import static com.backend.query.UserQuery.*;
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.apache.commons.lang3.time.DateUtils.addDays;
 
 @RequiredArgsConstructor
 @Repository
 @Slf4j
 public class UserRepositoryImpl implements UserRepository<User>, UserDetailsService {
+
+    private static final String DATE_FORMAT = "yyyy-MM-dd hh:mm:ss";
 
     private final NamedParameterJdbcTemplate jdbc;
     private final RoleRepository<Role> roleRepository;
@@ -128,6 +131,24 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             //if any errors, throw ex with proper message
         } catch (EmptyResultDataAccessException exception) {
             throw new ApiException("No user found by email " + email);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new ApiException("An error occurred. Pls try again");
+        }
+    }
+
+    @Override
+    public void sendVerificationCode(UserDTO user) {
+        String expirationDate = DateFormatUtils.format(addDays(new Date(), 1), DATE_FORMAT);
+        String verificationCode = randomAlphabetic(8).toUpperCase();
+        try {
+            jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, Map.of("id", user.getId()));
+            jdbc.update(INSERT_VERIFICATION_CODE_QUERY, Map.of("userId", user.getId(),
+                    "code", verificationCode, "expirationDate", expirationDate));
+            // todo if u need
+            // e disativato perche e a paggamento e paghi per ogni messaggio
+            //sendSMS(user.getPhone(), "From SecureCapita \nVerification code \n" + verificationCode);
+            //if any errors, throw ex with proper message
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new ApiException("An error occurred. Pls try again");

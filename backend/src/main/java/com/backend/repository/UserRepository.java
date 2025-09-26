@@ -1,6 +1,7 @@
 package com.backend.repository;
 
 import com.backend.domain.User;
+import com.backend.dto.UserDTO;
 
 import java.util.Collection;
 
@@ -18,6 +19,8 @@ public interface UserRepository<T extends User> {
     Boolean delete(Long id);
 
     User getUserByEmail(String email);
+
+    void sendVerificationCode(UserDTO userDTO);
 
     // More complex operation
 }
