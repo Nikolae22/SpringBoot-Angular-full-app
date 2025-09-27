@@ -21,10 +21,11 @@ public class UserRowMapper implements RowMapper<User> {
                 .title(resultSet.getString("title"))
                 .bio(resultSet.getString("bio"))
                 .imageUrl(resultSet.getString("image_url"))
-                .enabled(resultSet.getBoolean("enables"))
+                .enabled(resultSet.getBoolean("enabled"))
                 .isUsingMfa(resultSet.getBoolean("using_mfa"))
                 .isNotLocked(resultSet.getBoolean("non_locked"))
                 .createdAt(resultSet.getTimestamp("created_at").toLocalDateTime())
                 .build();
+
     }
 }
