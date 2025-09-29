@@ -4,13 +4,13 @@ import com.backend.domain.Role;
 import com.backend.domain.User;
 import com.backend.domain.UserPrincipal;
 import com.backend.dto.UserDTO;
+import com.backend.enumeration.VerificationType;
 import com.backend.exception.ApiException;
 import com.backend.repository.RoleRepository;
 import com.backend.repository.UserRepository;
 import com.backend.rolemapper.UserRowMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -28,9 +28,11 @@ import java.util.*;
 
 import static com.backend.enumeration.RoleType.ROLE_USER;
 import static com.backend.enumeration.VerificationType.ACCOUNT;
+import static com.backend.enumeration.VerificationType.PASSWORD;
 import static com.backend.query.UserQuery.*;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.apache.commons.lang3.time.DateFormatUtils.format;
 import static org.apache.commons.lang3.time.DateUtils.addDays;
 
 @RequiredArgsConstructor
@@ -98,18 +100,6 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         return jdbc.queryForObject(COUNT_USER_EMAIL_QUERY, Map.of("email", email), Integer.class);
     }
 
-    private SqlParameterSource getSqlParameterSource(User user) {
-        return new MapSqlParameterSource()
-                .addValue("firstName", user.getFirstName())
-                .addValue("lastName", user.getLastName())
-                .addValue("email", user.getEmail())
-                .addValue("password", encoder.encode(user.getPassword()));
-    }
-
-    private String getVerificationUrl(String key, String type) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/user/verify/" + type + "/" + key).toUriString();
-    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -138,7 +128,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
 
     @Override
     public void sendVerificationCode(UserDTO user) {
-        String expirationDate = DateFormatUtils.format(addDays(new Date(), 1), DATE_FORMAT);
+        String expirationDate = format(addDays(new Date(), 1), DATE_FORMAT);
         String verificationCode = randomAlphabetic(8).toUpperCase();
         try {
             jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, Map.of("id", user.getId()));
@@ -161,6 +151,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         try {
             User userByCode = jdbc.queryForObject(SELECT_USER_BY_USER_CODE_QUERY, Map.of("code", code), new UserRowMapper());
             User userByEmail = jdbc.queryForObject(SELECT_USER_BY_EMAIL_QUERY, Map.of("email", email), new UserRowMapper());
+            //delete after updating - depends on u requirement
             if (userByCode.getEmail().equalsIgnoreCase(userByEmail.getEmail())) {
                 jdbc.update(DELETE_CODE, Map.of("code", code));
                 return userByCode;
@@ -174,7 +165,78 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         }
     }
 
-    private boolean isVerificationCOdeExpired(String code) {
+    @Override
+    public void resetPassword(String email) {
+        if (getEmailCount(email.trim().toLowerCase()) <= 0)
+            throw new ApiException("There is no account for this email");
+        try {
+            String expirationDate = format(addDays(new Date(), 1), DATE_FORMAT);
+            User user = getUserByEmail(email);
+            String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), PASSWORD.getType());
+            jdbc.update(DELETE_PASSWORD_VERIFICATION_BY_USER_ID_QUERY, Map.of("userId", user.getId()));
+            jdbc.update(INSERT_PASSWORD_VERIFICATION_QUERY, Map.of(
+                    "userId", user.getId(), "url", verificationUrl, "expirationDate", expirationDate));
+            // send email with url to user
+            log.info("Verification url {}", verificationUrl);
+        } catch (Exception e) {
+            throw new ApiException("An error occurred. Please try again");
+        }
+    }
+
+    @Override
+    public User verifyPasswordKey(String key) {
+        if (isLinkExpired(key, PASSWORD))
+            throw new ApiException("This link has expired.Please reset your password again");
+        try {
+            User user = jdbc.queryForObject(SELECT_USER_BY_PASSWORD_URL_QUERY, Map.of("url", getVerificationUrl(key, PASSWORD.getType())), new UserRowMapper());
+            //jdbc.update("DELETE_USER_FROM_PASSWORD_VERIFICATION_QUERY",Map.of("id",user.getId())); // depend on user case / developer/business
+            return user;
+        } catch (EmptyResultDataAccessException e) {
+            log.error(e.getMessage());
+            throw new ApiException("This link is not valid.Please reset you password again");
+        } catch (Exception e) {
+            throw new ApiException("An error occurred. Please try again");
+        }
+    }
+
+    @Override
+    public void renewPassword(String key, String password, String confirmPassword) {
+        if (password.equals(confirmPassword)) throw new ApiException("Password dont match please try again");
+        try {
+            jdbc.update(UPDATE_USER_PASSWORD_BY_URL_QUERY, Map.of("password", encoder.encode(password),
+                    "url", getVerificationUrl(key, PASSWORD.getType())));
+            jdbc.update(DELETE_VERIFICATION_BY_URL_QUERY, Map.of("url", getVerificationUrl(key, PASSWORD.getType())));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new ApiException("An error occurred. Please try again");
+        }
+    }
+
+    @Override
+    public User verifyAccountKey(String key) {
+        try {
+            User user= jdbc.queryForObject(SELECT_USER_BY_ACCOUNT_URL_QUERY, Map.of("url", getVerificationUrl(key,ACCOUNT.getType())), new UserRowMapper());
+            jdbc.update(UPDATE_USER_ENABLED_QUERY,Map.of("enabled",true,"id",user.getId()));
+            return user;
+        } catch (EmptyResultDataAccessException e) {
+            throw new ApiException("This link is not valid");
+        } catch (Exception e) {
+            throw new ApiException("An error occurred. Please try again");
+        }
+    }
+
+    private Boolean isLinkExpired(String key, VerificationType password) {
+        try {
+            return jdbc.queryForObject(SELECT_EXPIRATION_BY_URL, Map.of("url", getVerificationUrl(key, password.getType())), Boolean.class);
+        } catch (EmptyResultDataAccessException e) {
+            log.error(e.getMessage());
+            throw new ApiException("This link is not valid.Please reset you password again");
+        } catch (Exception e) {
+            throw new ApiException("An error occurred. Please try again");
+        }
+    }
+
+    private Boolean isVerificationCOdeExpired(String code) {
         try {
             return jdbc.queryForObject(SELECT_CODE_EXPIRATION_QUERY, Map.of("code", code), Boolean.class);
         } catch (EmptyResultDataAccessException e) {
@@ -182,6 +244,19 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         } catch (Exception e) {
             throw new ApiException("An error occurred. Please try again");
         }
+    }
+
+    private SqlParameterSource getSqlParameterSource(User user) {
+        return new MapSqlParameterSource()
+                .addValue("firstName", user.getFirstName())
+                .addValue("lastName", user.getLastName())
+                .addValue("email", user.getEmail())
+                .addValue("password", encoder.encode(user.getPassword()));
+    }
+
+    private String getVerificationUrl(String key, String type) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/user/verify/" + type + "/" + key).toUriString();
     }
 }
 

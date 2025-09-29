@@ -29,7 +29,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Slf4j
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
-    private static final String[] PUBLIC_ROUTES = {"/user/login", "/user/register","/user/verify/code"};
+    private static final String[] PUBLIC_ROUTES = {"/user/login", "/user/register","/user/verify/code", "/user/refresh/token"};
     private final TokenProvider tokenProvider;
     private static final String TOKEN_KEY="token";
     private static final String EMAIL_KEY="email";
