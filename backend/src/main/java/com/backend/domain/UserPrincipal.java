@@ -1,5 +1,7 @@
 package com.backend.domain;
 
+import com.backend.dto.UserDTO;
+import com.backend.dtoMapper.UserDTOMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,11 +16,11 @@ import static java.util.stream.Collectors.toList;
 public class UserPrincipal implements UserDetails {
 
     private final User user;
-    private final String permissions;
+    private final Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return stream(permissions.split(",".trim()))
+        return stream(role.getPermission().split(",".trim()))
                 .map(SimpleGrantedAuthority::new).collect(toList());
     }
 
@@ -50,5 +52,9 @@ public class UserPrincipal implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.user.isEnabled();
+    }
+
+    public UserDTO getUser(){
+        return UserDTOMapper.fromUser(this.user,role);
     }
 }

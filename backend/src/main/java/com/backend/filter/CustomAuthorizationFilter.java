@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static com.backend.utils.ExceptionUtils.processError;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -44,6 +45,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             String token=getToken(request);
             if (tokenProvider.isTokenValid(values.get(EMAIL_KEY),token)){
                 List<GrantedAuthority> authorities=tokenProvider.getAuthorities(values.get(TOKEN_KEY));
+                //la riga sotto fa tornare solo email quando ce la richiestadel user
                 Authentication authentication=tokenProvider.getAuthentication(values.get(EMAIL_KEY),authorities,request);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }else {
@@ -52,7 +54,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request,response);
         }catch (Exception e){
             log.error(e.getMessage());
-            //processError(request,response,e);
+            processError(request,response,e);
         }
 
     }

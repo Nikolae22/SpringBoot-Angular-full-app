@@ -8,7 +8,9 @@ import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.backend.domain.UserPrincipal;
+import com.backend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,17 +28,19 @@ import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
 @Component
+@RequiredArgsConstructor
 public class TokenProvider {
 
     private static final String LEARNING = "Learning";
     private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1_000_000;
     private static final long REFRESH_TOKEN_EXPIRATION_TIME = 432_000_000;
     public static final String AUTHORITIES = "authorities";
+    private final UserService userService;
 
     @Value("${jwt.secret}")
     private String secret;
 
-    public String createAcccessToken(UserPrincipal userPrincipal) {
+    public String createAccessToken(UserPrincipal userPrincipal) {
         return JWT.create().withIssuer("Alone").withAudience(LEARNING)
                 .withIssuedAt(new Date())
                 .withSubject(userPrincipal.getPassword())
@@ -80,7 +84,7 @@ public class TokenProvider {
     public Authentication getAuthentication(String email, List<GrantedAuthority> authorities,
                                          HttpServletRequest request) {
         UsernamePasswordAuthenticationToken userPasswordAuthToken =
-                new UsernamePasswordAuthenticationToken(email, null, authorities);
+                new UsernamePasswordAuthenticationToken(userService.getUserByEmail(email), null, authorities);
         userPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         return userPasswordAuthToken;
     }

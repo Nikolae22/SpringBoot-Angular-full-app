@@ -37,25 +37,3 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     }
 }
 
-
-//@Component
-//public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
-//    @Override
-//    public void commence(HttpServletRequest request,
-//                         HttpServletResponse response,
-//                         AuthenticationException authException)
-//            throws IOException, ServletException {
-//        HttpResponse httpResponse=HttpResponse.builder()
-//                .timeStamp(now().toString())
-//                .reason("You need to log in to access this resource")
-//                .status(HttpStatus.UNAUTHORIZED)
-//                .statusCode(HttpStatus.UNAUTHORIZED.value())
-//                .build();
-//        response.setContentType(APPLICATION_JSON_VALUE);
-//        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-//        OutputStream out=response.getOutputStream();
-//        ObjectMapper mapper=new ObjectMapper();
-//        mapper.writeValue(out,httpResponse);
-//        out.flush();
-//    }
-//}

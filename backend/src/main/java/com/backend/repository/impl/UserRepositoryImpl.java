@@ -119,7 +119,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             throw new UsernameNotFoundException("User not found in the database");
         } else {
             log.info("User not found in the database {}", email);
-            return new UserPrincipal(user, roleRepository.getRoleByUserId(user.getId()).getPermission());
+            return new UserPrincipal(user, roleRepository.getRoleByUserId(user.getId()));
         }
     }
 
@@ -148,7 +148,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             // e disativato perche e a paggamento e paghi per ogni messaggio
             //sendSMS(user.getPhone(), "From SecureCapita \nVerification code \n" + verificationCode);
             //if any errors, throw ex with proper message
-            log.info("Verification code {}",verificationCode);
+            log.info("Verification code {}", verificationCode);
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new ApiException("An error occurred. Pls try again");
@@ -158,28 +158,28 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     @Override
     public User verifyCode(String email, String code) {
         if (isVerificationCOdeExpired(code)) throw new ApiException("This code expired.Please login again");
-        try{
-            User userByCode=jdbc.queryForObject(SELECT_USER_BY_USER_CODE_QUERY,Map.of("code",code),new UserRowMapper());
-            User userByEmail=jdbc.queryForObject(SELECT_USER_BY_EMAIL_QUERY,Map.of("email",email),new UserRowMapper());
-            if (userByCode.getEmail().equalsIgnoreCase(userByEmail.getEmail())){
+        try {
+            User userByCode = jdbc.queryForObject(SELECT_USER_BY_USER_CODE_QUERY, Map.of("code", code), new UserRowMapper());
+            User userByEmail = jdbc.queryForObject(SELECT_USER_BY_EMAIL_QUERY, Map.of("email", email), new UserRowMapper());
+            if (userByCode.getEmail().equalsIgnoreCase(userByEmail.getEmail())) {
                 jdbc.update(DELETE_CODE, Map.of("code", code));
                 return userByCode;
-            }else {
+            } else {
                 throw new ApiException("Code is invalid. Please try again");
             }
-        }catch (EmptyResultDataAccessException e){
+        } catch (EmptyResultDataAccessException e) {
             throw new ApiException("Could not found record");
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ApiException("An error occurred. Please try again");
         }
     }
 
     private boolean isVerificationCOdeExpired(String code) {
-        try{
-            return jdbc.queryForObject(SELECT_CODE_EXPIRATION_QUERY,Map.of("code",code),Boolean.class);
-        }catch (EmptyResultDataAccessException e){
+        try {
+            return jdbc.queryForObject(SELECT_CODE_EXPIRATION_QUERY, Map.of("code", code), Boolean.class);
+        } catch (EmptyResultDataAccessException e) {
             throw new ApiException("This code is not valid. Login again");
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ApiException("An error occurred. Please try again");
         }
     }
