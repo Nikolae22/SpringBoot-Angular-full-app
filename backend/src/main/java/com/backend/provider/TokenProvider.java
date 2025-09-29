@@ -77,7 +77,7 @@ public class TokenProvider {
         return stream(claims).map(SimpleGrantedAuthority::new).collect(toList());
     }
 
-    public Authentication authentication(String email, List<GrantedAuthority> authorities,
+    public Authentication getAuthentication(String email, List<GrantedAuthority> authorities,
                                          HttpServletRequest request) {
         UsernamePasswordAuthenticationToken userPasswordAuthToken =
                 new UsernamePasswordAuthenticationToken(email, null, authorities);

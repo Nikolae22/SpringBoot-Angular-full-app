@@ -16,12 +16,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
+
+import static org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated;
 
 @Slf4j
 @RestController
@@ -36,9 +39,7 @@ public class UserResource {
 
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginFrom) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginFrom.getEmail(), loginFrom.getPassword())
-        );
+        authenticationManager.authenticate(unauthenticated(loginFrom.getEmail(), loginFrom.getPassword()));
         log.info("Log nel database");
         UserDTO user = userService.getUserByEmail(loginFrom.getEmail());
         return user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
@@ -57,6 +58,20 @@ public class UserResource {
                         .status(HttpStatus.CREATED)
                         .statusCode(HttpStatus.CREATED.value())
                         .build());
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<HttpResponse> profile(Authentication authentication) {
+        UserDTO user = userService.getUserByEmail(authentication.getName());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .data(Map.of("user", user))
+                        .message("Profile Retrieve")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+
     }
 
     @GetMapping("/verify/code/{email}/{code}")

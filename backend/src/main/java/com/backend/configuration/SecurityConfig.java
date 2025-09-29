@@ -1,5 +1,6 @@
 package com.backend.configuration;
 
+import com.backend.filter.CustomAuthorizationFilter;
 import com.backend.handler.CustomAccessDeniedHandler;
 import com.backend.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,6 +37,7 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final UserDetailsService userDetailsService;
+    private final CustomAuthorizationFilter customAuthorizationFilter;
 
 
     private static final String[] PUBLIC_URLS = {"/user/login", "/user/register","/user/verify/code/**"};
@@ -52,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/customer/delete/**").hasAuthority("DELETE:CUSTOMER")
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
 //                .exceptionHandling(ex -> ex.accessDeniedHandler(customAccessDeniedHandler)
 //                        .authenticationEntryPoint(customAuthenticationEntryPoint))
                 .build();

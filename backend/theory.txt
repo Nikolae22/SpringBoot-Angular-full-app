@@ -7,3 +7,11 @@ Security Filter:
       Provider Manager Authentication Manager->
         DaoAuthenticationProvider Authentication Provider->
           InMemoryUserDetailsManager User Details Service
+
+
+
+Authorization FIlter;
+
+User access Token ->
+  http -> filters Authorization Filters -> application User Proffiles
+  -> filters authorization filter -> authorization headers -> access token
