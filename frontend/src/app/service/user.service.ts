@@ -28,6 +28,10 @@ export class UserService {
         catchError(this.handleError)
       );
 
+  prfile$=() => <Observable<CustomHttpResponse<Profile>>>
+      this.http.get<CustomHttpResponse<Profile>>
+      (`${this.server}/user/profile`)
+
  private handleError(error:HttpErrorResponse):Observable<never>{
    console.log(error)
     let errorMessage:string;

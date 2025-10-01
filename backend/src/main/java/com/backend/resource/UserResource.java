@@ -27,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import static com.backend.utils.ExceptionUtils.processError;
+import static com.backend.utils.UserUtils.getAuthenticatedUser;
+import static com.backend.utils.UserUtils.getLoggedInUser;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated;
 
@@ -49,13 +51,10 @@ public class UserResource {
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginFrom) {
         log.info("Log nel database");
         Authentication authentication = authenticate(loginFrom.getEmail(), loginFrom.getPassword());
-        UserDTO user = getAuthenticateUser(authentication);
+        UserDTO user = getLoggedInUser(authentication);
         return user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
     }
 
-    private UserDTO getAuthenticateUser(Authentication authentication) {
-        return ((UserPrincipal) authentication.getPrincipal()).getUser();
-    }
 
 
     @PostMapping("/register")
@@ -74,7 +73,7 @@ public class UserResource {
 
     @GetMapping("/profile")
     public ResponseEntity<HttpResponse> profile(Authentication authentication) {
-        UserDTO user = userService.getUserByEmail(authentication.getName());
+        UserDTO user = userService.getUserByEmail(getAuthenticatedUser(authentication).getEmail());
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())

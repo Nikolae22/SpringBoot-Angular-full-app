@@ -28,7 +28,7 @@ export class LoginComponent {
 
   private phoneSubject = new BehaviorSubject<string | null>(null);
   private emailSubject = new BehaviorSubject<string | null>(null);
-  readonly DataState = DataState;
+  readonly DataState = DataState; 
 
   constructor(private router: Router, private userService: UserService) {
   }
