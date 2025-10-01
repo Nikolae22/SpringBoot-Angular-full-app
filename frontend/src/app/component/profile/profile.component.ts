@@ -8,7 +8,7 @@ import { CustomHttpResponse } from '../../interface/customhttpresponse';
 import { Profile } from '../../interface/appstates';
 import { UserService } from '../../service/user.service';
 import { CommonModule, NgIf } from '@angular/common';
-import { FormsModule } from "@angular/forms";
+import { FormsModule, NgForm } from "@angular/forms";
 
 
 @Component({
@@ -22,12 +22,14 @@ export class ProfileComponent implements OnInit {
   profileState$: Observable<State<CustomHttpResponse<Profile>>> | undefined;
 
   private dataSubject = new BehaviorSubject<CustomHttpResponse<Profile>>(null!);
-  private isLoadingSubkect = new BehaviorSubject<boolean>(false);
-  isLoading$ =this.isLoadingSubkect.asObservable();
+  private isLoadingSubject = new BehaviorSubject<boolean>(false);
+  isLoading$ =this.isLoadingSubject.asObservable();
 
   readonly DataState = DataState;
 
   constructor(private userService: UserService) {}
+
+  //TODO manca il token
   ngOnInit(): void {
     this.profileState$ = this.userService.prfile$().pipe(
       map((response) => {
@@ -39,7 +41,30 @@ export class ProfileComponent implements OnInit {
       catchError((error: string) => {
         return of({
           dataState: DataState.ERROR,
-          appDataL: this.dataSubject.value,
+          appData: this.dataSubject.value,
+          error,
+        });
+      })
+    );
+  }
+
+  // TODO manca il token
+   updateProfile(profileForm:NgForm): void {
+    this.isLoadingSubject.next(true)
+    this.profileState$ = this.userService.update$(profileForm.value)
+    .pipe(
+      map((response) => {
+        console.log(response);
+        this.dataSubject.next({...response,data:response.data});
+        this.isLoadingSubject.next(false)
+        return { dataState: DataState.LOADED, appData: this.dataSubject.value };
+      }),
+      startWith({ dataState: DataState.LOADING ,appData:this.dataSubject.value}),
+      catchError((error: string) => {
+        this.isLoadingSubject.next(false)
+        return of({
+          dataState: DataState.LOADED,
+          appData: this.dataSubject.value,
           error,
         });
       })

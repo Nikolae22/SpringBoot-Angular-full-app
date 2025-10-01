@@ -7,6 +7,7 @@ import com.backend.dto.UserDTO;
 import com.backend.dtoMapper.UserDTOMapper;
 import com.backend.exception.ApiException;
 import com.backend.form.LoginForm;
+import com.backend.form.UpdateForm;
 import com.backend.provider.TokenProvider;
 import com.backend.service.RoleService;
 import com.backend.service.UserService;
@@ -25,6 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.backend.utils.ExceptionUtils.processError;
 import static com.backend.utils.UserUtils.getAuthenticatedUser;
@@ -82,7 +84,20 @@ public class UserResource {
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
                         .build());
+    }
 
+    @PatchMapping("update")
+    public ResponseEntity<HttpResponse> updateUser(@RequestBody @Valid UpdateForm user) throws InterruptedException {
+        TimeUnit.SECONDS.sleep(3);
+        UserDTO updatedUser = userService.updateUserDetails(user);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .data(Map.of("User updated", updatedUser))
+                        .message("Profile Retrieve")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
     }
 
     @GetMapping("/verify/code/{email}/{code}")
@@ -162,7 +177,7 @@ public class UserResource {
     public ResponseEntity<HttpResponse> refreshToken(HttpServletRequest request) {
         if (isHeaderAndTokenValid(request)) {
             String token = request.getHeader(AUTHORIZATION).substring(TOKEN_PREFIX.length());
-            UserDTO user = userService.getUserByEmail(tokenProvider.getSubject(token, request));
+            UserDTO user = userService.getUserById(tokenProvider.getSubject(token, request));
             return ResponseEntity.ok().body(
                     HttpResponse.builder()
                             .timeStamp(LocalDateTime.now().toString())

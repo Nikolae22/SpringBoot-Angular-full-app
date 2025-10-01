@@ -4,6 +4,7 @@ import com.backend.domain.Role;
 import com.backend.domain.User;
 import com.backend.dto.UserDTO;
 import com.backend.dtoMapper.UserDTOMapper;
+import com.backend.form.UpdateForm;
 import com.backend.repository.RoleRepository;
 import com.backend.repository.UserRepository;
 import com.backend.service.UserService;
@@ -55,6 +56,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO verifyAccount(String key) {
         return UserDTOMapper.fromUser(userRepository.verifyAccountKey(key));
+    }
+
+    @Override
+    public UserDTO updateUserDetails(UpdateForm user) {
+        return mapToUserDTO(userRepository.updateUserDetails(user));
+    }
+
+    @Override
+    public UserDTO getUserById(Long userId) {
+        return mapToUserDTO(userRepository.get(userId));
     }
 
     private UserDTO mapToUserDTO(User user) {

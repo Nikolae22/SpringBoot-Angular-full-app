@@ -3,6 +3,7 @@ import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {catchError, Observable, tap, throwError} from "rxjs";
 import {CustomHttpResponse} from "../interface/customhttpresponse";
 import {Profile} from "../interface/appstates";
+import { User } from '../interface/user';
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +32,18 @@ export class UserService {
   prfile$=() => <Observable<CustomHttpResponse<Profile>>>
       this.http.get<CustomHttpResponse<Profile>>
       (`${this.server}/user/profile`)
+      .pipe(
+        tap(console.log),
+        catchError(this.handleError)
+      );
+
+      update$=(user:User) => <Observable<CustomHttpResponse<Profile>>>
+      this.http.patch<CustomHttpResponse<Profile>>
+      (`${this.server}/user/update`,{user})
+      .pipe(
+        tap(console.log),
+        catchError(this.handleError)
+      );
 
  private handleError(error:HttpErrorResponse):Observable<never>{
    console.log(error)

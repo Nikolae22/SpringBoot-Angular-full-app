@@ -2,6 +2,8 @@ package com.backend.service;
 
 import com.backend.domain.User;
 import com.backend.dto.UserDTO;
+import com.backend.form.UpdateForm;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 
 public interface UserService {
@@ -21,4 +23,8 @@ public interface UserService {
     void renewPassword(String key, String password, String confirmPassword);
 
     UserDTO verifyAccount(String key);
+
+    UserDTO updateUserDetails(@Valid UpdateForm user);
+
+    UserDTO getUserById(Long userId);
 }

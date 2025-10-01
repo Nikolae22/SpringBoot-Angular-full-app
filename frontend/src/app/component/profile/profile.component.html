@@ -49,14 +49,14 @@
                 <div class="tab-content p-4 p-md-5" id="v-pills-tabContent" style="border-left: 1px solid #d4d0d0;">
                    <div class="tab-pane fade show active" id="profile-tab" role="tabpanel" aria-labelledby="profile" style="min-height: 510px;">
                       <h3 class="mb-4">Profile Settings</h3>
-                      <form>
-                         <input type="hidden" name="id">
+                      <form #profileForm="ngForm" (ngSubmit)="updateProfile(profileForm)">
+                         <input type="hidden" name="id". [ngModel]="state?.appData?.data?.user?.id">
                          <div class="row">
                             <div class="col-md-6">
                                <div class="form-group">
                                     <label>First Name</label>
                                     <input type="text" name="firstName" [ngModel]="state?.appData?.data?.user?.firstName" 
-                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER'"
+                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER' (isLoading$ | async)"
                                     class="form-control">
                                </div>
                             </div>
@@ -64,7 +64,7 @@
                                <div class="form-group">
                                     <label>Last Name</label>
                                     <input type="text" name="lastName" 
-                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER'"
+                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER' (isLoading$ | async)"
                                     [ngModel]="state?.appData?.data?.user?.lastName" class="form-control">
                                </div>
                             </div>
@@ -72,7 +72,7 @@
                                <div class="form-group">
                                     <label for="email">Email</label>
                                     <input type="text" name="email" 
-                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER'"
+                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER' (isLoading$ | async)"
                                     [ngModel]="state?.appData?.data?.user?.email"  class="form-control">
                                </div>
                             </div>
@@ -80,7 +80,7 @@
                                <div class="form-group">
                                     <label>Phone</label>
                                     <input type="text" name="phone" 
-                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER'"
+                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER' (isLoading$ | async)"
                                     [ngModel]="state?.appData?.data?.user?.phone"  class="form-control">
                                </div>
                             </div>
@@ -88,7 +88,7 @@
                                <div class="form-group">
                                     <label>Address</label>
                                     <input type="text" name="address" 
-                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER'"
+                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER' (isLoading$ | async)"
                                     [ngModel]="state?.appData?.data?.user?.address" class="form-control">
                                </div>
                             </div>
@@ -96,7 +96,7 @@
                                <div class="form-group">
                                     <label>Job Title</label>
                                     <input type="text" name="title" 
-                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER'"
+                                    disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER' || (isLoading$ | async)"
                                     [ngModel]="state?.appData?.data?.user?.title" class="form-control">
                                </div>
                             </div>
@@ -104,14 +104,14 @@
                                <div class="form-group">
                                     <label>Bio</label>
                                   <textarea name="bio" 
-                                  disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER'"
+                                  disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER' (isLoading$ | async)"
                                   [textContent]="state?.appData?.data?.user?.bio" [ngModel]="state?.appData?.data?.user?.bio" class="form-control" rows="4"></textarea>
                                </div>
                             </div>
                          </div>
                          <div>
                             <button  
-                            disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER'"
+                            disabled="state?.appData?.data?.user?.roleName === 'ROLE_USER' (isLoading$ | async)"
                             type="submit" class="btn btn-primary">
                                <span *ngIf="isLoading$ | async"  class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 5px;"></span>
                                <span *ngIf="isLoading$ | async" >Loading...</span>
