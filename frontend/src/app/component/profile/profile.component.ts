@@ -48,7 +48,6 @@ export class ProfileComponent implements OnInit {
     );
   }
 
-  // TODO manca il token
    updateProfile(profileForm:NgForm): void {
     this.isLoadingSubject.next(true)
     this.profileState$ = this.userService.update$(profileForm.value)
@@ -69,5 +68,35 @@ export class ProfileComponent implements OnInit {
         });
       })
     );
+  }
+
+
+   updatePassword(passwordForm:NgForm): void {
+    this.isLoadingSubject.next(true)
+    if(passwordForm.value.newPassword === passwordForm.value.confirmNewPasswword){
+      this.profileState$ = this.userService.updatePassword$(passwordForm.value)
+    .pipe(
+      map((response) => {
+        console.log(response);
+        passwordForm.reset()
+        this.dataSubject.next({...response,data:response.data});
+        this.isLoadingSubject.next(false)
+        return { dataState: DataState.LOADED, appData: this.dataSubject.value };
+      }),
+      startWith({ dataState: DataState.LOADING ,appData:this.dataSubject.value}),
+      catchError((error: string) => {
+        passwordForm.reset()
+        this.isLoadingSubject.next(false)
+        return of({
+          dataState: DataState.LOADED,
+          appData: this.dataSubject.value,
+          error,
+        });
+      })
+    );
+    }else{
+      passwordForm.reset();
+      this.isLoadingSubject.next(false);
+    }
   }
 }

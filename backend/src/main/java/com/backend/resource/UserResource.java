@@ -8,6 +8,7 @@ import com.backend.dtoMapper.UserDTOMapper;
 import com.backend.exception.ApiException;
 import com.backend.form.LoginForm;
 import com.backend.form.UpdateForm;
+import com.backend.form.UpdatePasswordForm;
 import com.backend.provider.TokenProvider;
 import com.backend.service.RoleService;
 import com.backend.service.UserService;
@@ -144,6 +145,20 @@ public class UserResource {
                         .statusCode(HttpStatus.OK.value())
                         .build()
         );
+    }
+
+    @PatchMapping("/update/password")
+    public ResponseEntity<HttpResponse> updatePassword(Authentication authentication,
+                                                       @RequestBody @Valid UpdatePasswordForm form) {
+        UserDTO userDTO=getAuthenticatedUser(authentication);
+        userService.updatePassword(userDTO.getId(),form.getCurrentPassword(),form.getNewPassword(),form.getConfirmNewPassword());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .message("Password updated successfully")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
     }
 
 

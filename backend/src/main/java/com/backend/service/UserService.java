@@ -5,6 +5,7 @@ import com.backend.dto.UserDTO;
 import com.backend.form.UpdateForm;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 public interface UserService {
 
@@ -27,4 +28,6 @@ public interface UserService {
     UserDTO updateUserDetails(@Valid UpdateForm user);
 
     UserDTO getUserById(Long userId);
+
+    void updatePassword(Long id, @NotNull(message = "Current password cannot be empty") String currentPassword, @NotEmpty(message = "New password cannot be empty") String newPassword, @NotEmpty(message = "Cannot be empty") String confirmNewPassword);
 }
