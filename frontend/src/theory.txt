@@ -1,0 +1,16 @@
+Token Interceptor
+
+get a new acces token when the token is expired
+
+api  POST/login. GET/refresh-token -> Interceptor -> get/profile. <-
+
+non guarda solo la richesta ma anche la riposta
+sta in mezzo tra backend e front end 
+
+quando ce una reguest dal front al back interceptro look localstorage e grab
+token e edid like a header in authorization goind out 
+when the acess token is expired in local storage and the interceptor send
+to backend its gonna failed  e ci sara una risposta di error nel front 
+che il token e expired but the interceptor see that response before the front
+e appena vede questo errore va nel local storage prende refresh token 
+e rimadna tutto da capo 
