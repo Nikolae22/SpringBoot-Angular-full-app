@@ -7,6 +7,7 @@ import com.backend.dto.UserDTO;
 import com.backend.dtoMapper.UserDTOMapper;
 import com.backend.exception.ApiException;
 import com.backend.form.LoginForm;
+import com.backend.form.SettingsForm;
 import com.backend.form.UpdateForm;
 import com.backend.form.UpdatePasswordForm;
 import com.backend.provider.TokenProvider;
@@ -29,7 +30,6 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.backend.utils.ExceptionUtils.processError;
 import static com.backend.utils.UserUtils.getAuthenticatedUser;
 import static com.backend.utils.UserUtils.getLoggedInUser;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -80,7 +80,8 @@ public class UserResource {
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
-                        .data(Map.of("user", user))
+                        .data(Map.of("user", user,
+                                "roles",roleService.getRoles()))
                         .message("Profile Retrieve")
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
@@ -156,6 +157,39 @@ public class UserResource {
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
                         .message("Password updated successfully")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+    }
+
+
+    @PatchMapping("/update/role/{roleName}")
+    public ResponseEntity<HttpResponse> updateRole(Authentication authentication,
+                                                       @PathVariable String roleName) {
+        UserDTO userDTO=getAuthenticatedUser(authentication);
+        userService.updateUserRole(userDTO.getId(),roleName);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .data(Map.of("user",userService.getUserById(userDTO.getId()),
+                                "roles",roleService.getRoles()))
+                        .message("Role updated successfully")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+    }
+
+    @PatchMapping("/update/settings")
+    public ResponseEntity<HttpResponse> updateAccuntSettings(Authentication authentication,
+                                                             @RequestBody @Valid SettingsForm form) {
+        UserDTO userDTO=getAuthenticatedUser(authentication);
+        userService.updateAccountSettings(userDTO.getId(),form.getEnabled(),form.getNotLocked());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .data(Map.of("user",userService.getUserById(userDTO.getId()),
+                                "roles",roleService.getRoles()))
+                        .message("Accounts setting uploaded successfully")
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
                         .build());

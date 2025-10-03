@@ -30,4 +30,8 @@ public interface UserService {
     UserDTO getUserById(Long userId);
 
     void updatePassword(Long id, @NotNull(message = "Current password cannot be empty") String currentPassword, @NotEmpty(message = "New password cannot be empty") String newPassword, @NotEmpty(message = "Cannot be empty") String confirmNewPassword);
+
+    void updateUserRole(Long userId, String roleName);
+
+    void updateAccountSettings(Long userId, @NotNull(message = "Id cannot be null") Boolean enabled, @NotNull(message = "Id cannot be null") Boolean notLocked);
 }
