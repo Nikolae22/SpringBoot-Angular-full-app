@@ -23,4 +23,5 @@ public class UserQuery {
     public static final String SELECT_USER_BY_ID_QUERY="SELECT * FROM Users WHERE id = :id";
     public static final String UPDATE_USER_PASSWORD_BY_ID_QUERY="update users set password = :password where id = :userId";
     public static final String UPDATE_USER_SETTINGS_QUERY="update users set enabled =:enabled, not_locked = :notLocked where id = :userId";
+    public static final String TOGGLE_USER_MFA_QUERY="update Users set using_mfa = :isUsingMfa where email = :email";
 }

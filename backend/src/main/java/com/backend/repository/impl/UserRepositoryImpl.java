@@ -12,6 +12,7 @@ import com.backend.repository.UserRepository;
 import com.backend.rolemapper.UserRowMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -265,7 +266,19 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         } catch (Exception e) {
             throw new ApiException("An error occurred. Please try again");
         }
+    }
 
+    @Override
+    public User toggleMfa(String email) {
+        User user=getUserByEmail(email);
+        if (StringUtils.isBlank(user.getPhone())) {throw new ApiException("You need a phone to change MFA Authorization");}
+        user.setUsingMfa(!user.isUsingMfa());
+        try {
+            jdbc.update(TOGGLE_USER_MFA_QUERY, Map.of("email",email,"isUsingMfa",user.isUsingMfa()));
+            return user;
+        } catch (Exception e) {
+            throw new ApiException("Unable to update MFA");
+        }
     }
 
 

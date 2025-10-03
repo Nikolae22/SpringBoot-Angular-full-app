@@ -39,6 +39,8 @@ public interface UserRepository<T extends User> {
 
     void updateAccountSettings(Long userId, Boolean enabled, Boolean notLocked);
 
+    User toggleMfa(String email);
+
 
     // More complex operation
 }

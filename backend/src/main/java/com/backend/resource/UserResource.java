@@ -196,6 +196,20 @@ public class UserResource {
     }
 
 
+    @PatchMapping("/update/settings")
+    public ResponseEntity<HttpResponse> toggleMfa(Authentication authentication){
+        UserDTO userDTO=userService.toggleMfa(getAuthenticatedUser(authentication).getEmail());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(LocalDateTime.now().toString())
+                        .data(Map.of("user",userDTO,"roles",roleService.getRoles()))
+                        .message("Mfa updated")
+                        .status(HttpStatus.OK)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+    }
+
+
     @GetMapping("/verify/password/{key}")
     public ResponseEntity<HttpResponse> verifyPasswordUrl(@PathVariable String key) {
         UserDTO user = userService.verifyPasswordKey(key);

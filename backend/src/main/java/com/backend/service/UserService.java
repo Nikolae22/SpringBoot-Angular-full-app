@@ -34,4 +34,6 @@ public interface UserService {
     void updateUserRole(Long userId, String roleName);
 
     void updateAccountSettings(Long userId, @NotNull(message = "Id cannot be null") Boolean enabled, @NotNull(message = "Id cannot be null") Boolean notLocked);
+
+    UserDTO toggleMfa(String email);
 }
