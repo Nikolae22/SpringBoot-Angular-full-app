@@ -1,16 +1,18 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { CustomHttpResponse } from '../interface/customhttpresponse';
 import { Profile } from '../interface/appstates';
 import { User } from '../interface/user';
 import { Key } from '../component/enum/key.enum';
+import {JwtHelperService} from '@auth0/angular-jwt';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
   private server: string = 'http://localhost:8080';
+  private jwtHelper=new JwtHelperService()
 
   constructor(private http: HttpClient) {}
 
@@ -99,6 +101,22 @@ export class UserService {
         .pipe(tap(console.log), 
         catchError(this.handleError))
     );
+
+      updateImage$ = (formData:FormData) =>
+    <Observable<CustomHttpResponse<Profile>>>(
+      this.http
+        .patch<CustomHttpResponse<Profile>>(`${this.server}/user/image$`,{formData})
+        .pipe(tap(console.log), 
+        catchError(this.handleError))
+    );
+
+    logOut() {
+    localStorage.removeItem(Key.TOKEN);
+    localStorage.removeItem(Key.REFRESH_TOKEN);
+  }
+
+    isAuthenticated =():boolean =>(this.jwtHelper.decodeToken<string>(localStorage.getItem(Key.TOKEN)) && 
+  this.jwtHelper.isTokenExpired(localStorage.getItem(Key.TOKEN))) ? true : false;
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.log(error);

@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
-import { RouterLink } from "@angular/router";
+import { Component, inject, Input } from '@angular/core';
+import { Router, RouterLink } from "@angular/router";
+import { UserService } from '../../service/user.service';
+import { User } from '../../interface/user';
 
 @Component({
   selector: 'app-navbar',
@@ -9,5 +11,16 @@ import { RouterLink } from "@angular/router";
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
+
+  private router=inject(Router);
+  private userService=inject(UserService);
+
+  @Input() user:User| undefined;
+
+
+  logOut():void{
+    this.userService.logOut();
+    this.router.navigate(['/login'])
+  }
 
 }

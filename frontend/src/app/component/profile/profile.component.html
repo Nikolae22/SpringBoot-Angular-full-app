@@ -1,6 +1,6 @@
 <ng-container *ngIf="(profileState$ | async ) as state">
     <ng-container>
-       <app-navbar></app-navbar>
+       <app-navbar [user]="state?.appData?.data?.user"></app-navbar>
        <!-- server per vededere il state in foramto json sul template  -->
        <!-- <div>{{ state | json }} </div> -->
        <section>
@@ -20,9 +20,9 @@
                    <div class="p-4">
                       <div class="img-circle text-center mb-3" >
                          <span style="position: relative">
-                            <!-- <img [src]="state?.appData?.data?.user?.imageUrl" alt="we" class="shadow" /> -->
-                            <img src="https://img.freepik.com/free-icon/user_318-159711.jpg" alt="WE" class="shadow" />
-                         <i class="bi bi-camera-fill right-position"></i>
+                            <img [src]="state?.appData?.data?.user?.imageUrl" alt="we" class="shadow" />
+                            <!-- <img src="https://img.freepik.com/free-icon/user_318-159711.jpg" alt="WE" class="shadow" /> -->
+                         <i (click)="fileInput.click()" class="bi bi-camera-fill right-position"></i>
                          </span>
                       </div>
                       <h4 class="text-center">{{state?.appData?.data?.user?.firstName}} {{state?.appData?.data?.user?.lastName}}</h4>
@@ -288,7 +288,10 @@
                                   </div>
                                   <div class="col-auto">
                                       <div class="custom-control custom-switch">
-                                          <input type="checkbox"class="custom-control-input" id="activityLog">
+                                          <input type="checkbox"
+                                          (change)="toggleLogs()"
+                                          [checked]="showLogs$ | async"
+                                          class="custom-control-input" id="activityLog">
                                           <span class="custom-control-label"></span>
                                       </div>
                                   </div>
@@ -298,7 +301,7 @@
                    </div>
                 </div>
              </div>
-             <div  class="row">
+             <div *ngIf="(showLogs$ | async)" class="row">
                 <div class="col-xl-12 mt-4">
                    <div class="card" style="border-radius: 8px;">
                       <div class="card-body">
@@ -316,16 +319,26 @@
                                </tr>
                             </thead>
                             <tbody>
-                               <tr >
-                                  <td>Device</td>
-                                  <td>ADdress</td>
-                                  <td>Date</td>
-                                  <td>
-                                    <span class="badge pill">
-                                       Type
+                               <tr *ngFor="let event of state?.appData?.data?.events">
+                                  <td>{{event.device}}</td>
+                                  <td>{{event.ipAddress}}</td>
+                                  <td>{{event.createdAt | date: 'MMMM d, y, h:mm a'}}</td>
+                                   <td>
+                                    <span class="badge pill" [ngClass]="[
+                                    event.type === EventType.LOGIN_ATTEMPT_SUCCESS ? 'bg-success' : '',  
+                                    event.type === EventType.LOGIN_ATTEMPT ? 'bg-warning' : '',
+                                    event.type === EventType.PROFILE_UPDATE ? 'bg-primary' : '',
+                                    event.type === EventType.LOGIN_ATTEMPT_FAILURE ? 'bg-danger' : '',
+                                    event.type === EventType.PROFILE_PICTURE_UPDATE ? 'bg-primary' : '',
+                                    event.type === EventType.ROLE_UPDATE ? 'bg-info' : '',
+                                    event.type === EventType.ACCOUNT_SETTINGS_UPDATE ? 'bg-warning' : '',
+                                    event.type === EventType.PASSWORD_UPDATE ? 'bg-warning' : '',
+                                    event.type === EventType.MFA_UPDATE ? 'bg-info' : ''
+                                    ]">
+                                       {{ event.type }}
                                      </span>
                                   </td>
-                                  <td>Description</td>
+                                  <td>{{event.description}}</td>
                                   <td>
                                      <button type="button" class="btn btn-sm" style="background-color: #fd5d0d; font-weight: 450;">Report</button>
                                   </td>
@@ -343,6 +356,6 @@
  
  <!-- profile image change form -->
  <form enctype="multipart/form-data" style="display:none;">
-    <input type="file" name="image" id="image"
+    <input type="file" #fileInput (change)="updatePictureImage($event.target.files[0])" name="image" id="image"
        placeholder="file" ngModel accept="image/*" />
  </form>

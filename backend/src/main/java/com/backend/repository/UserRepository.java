@@ -3,6 +3,7 @@ package com.backend.repository;
 import com.backend.domain.User;
 import com.backend.dto.UserDTO;
 import com.backend.form.UpdateForm;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
 
@@ -40,6 +41,8 @@ public interface UserRepository<T extends User> {
     void updateAccountSettings(Long userId, Boolean enabled, Boolean notLocked);
 
     User toggleMfa(String email);
+
+    void updateImage(UserDTO userDTO, MultipartFile image);
 
 
     // More complex operation

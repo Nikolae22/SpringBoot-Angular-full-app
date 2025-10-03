@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Router, RouterLink} from "@angular/router";
 import {UserService} from "../../service/user.service";
 import {FormsModule, NgForm} from "@angular/forms";
@@ -22,7 +22,7 @@ import {AsyncPipe, NgIf, NgStyle, NgSwitch} from "@angular/common";
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   loginState$: Observable<LoginState> = of({dataState: DataState.LOADED});
 
@@ -30,7 +30,11 @@ export class LoginComponent {
   private emailSubject = new BehaviorSubject<string | null>(null);
   readonly DataState = DataState; 
 
-  constructor(private router: Router, private userService: UserService) {
+  constructor(private router: Router, private userService: UserService) { }
+
+
+  ngOnInit(): void {
+   this.userService.isAuthenticated() ? this.router.navigate(['/']) : this.router.navigate(['/login']);
   }
 
   login(loginForm: NgForm): void {
