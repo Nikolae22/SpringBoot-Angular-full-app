@@ -63,9 +63,14 @@
                         <td>{{customer.type}}</td>
                         <td>
                             <button type="button"
-                            (click)="selectCustomer(customer)"
+                           [routerLink]="['/customers', customer.id]"
                             class="btn btn-primary">View</button>
                         </td>
+                      <td>
+<!--                        <button type="button"-->
+<!--                                (click)="selectCustomer(customer)"-->
+<!--                                class="btn btn-primary">View</button>-->
+<!--                      </td>-->
                     </tr>
                 </tbody>
             </table>
