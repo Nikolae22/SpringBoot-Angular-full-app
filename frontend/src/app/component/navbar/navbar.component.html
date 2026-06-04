@@ -85,8 +85,8 @@
           >
             <img
               [src]="user?.imageUrl"
-              alt="user.firstName"
-              class="user-avatar-md rounded-circle"
+              alt="user?.firstName"
+              class="user?-avatar-md rounded-circle"
           /></a>
           <ul
             class="dropdown-menu dropdown-menu-end"
@@ -95,12 +95,11 @@
             <li>
               <a class="dropdown-item" [routerLink]="['/profile']"
                 ><i style="padding-right: 8px" class="bi bi-person-circle"></i
-                >{{user?.firstName}} {{user?.lastName}}</a
+                >{{ user?.firstName }} {{ user?.lastName }}</a
               >
             </li>
             <li style="cursor: pointer">
-              <a class="dropdown-item"
-              (click)="logOut()"
+              <a class="dropdown-item" (click)="logOut()"
                 ><i
                   style="padding-right: 8px"
                   class="bi bi-box-arrow-in-right"

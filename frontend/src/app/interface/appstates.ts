@@ -1,4 +1,5 @@
 import {DataState} from "../component/enum/datastate.enum";
+import { Customer } from "./customer";
 import { Events } from "./exents";
 import { Role } from "./role";
 
@@ -19,4 +20,37 @@ export interface Profile {
   roles: Role[];
   access_token:string;
   refresh_token:string
+}
+
+
+export interface Page<T> {
+    content: T[];
+    totalPages: number;
+    totalElements: number;
+    numberOfElements: number;
+    size: number;
+    number: number;
+}
+
+export interface CustomerState {
+    user: User;
+    customer: Customer;
+}
+
+export interface RegisterState {
+    dataState: DataState;
+    registerSuccess?: boolean;
+    error?: string;
+    message?: string;
+}
+
+export type AccountType = 'account' | 'password';
+
+export interface VerifySate {
+    dataState: DataState;
+    verifySuccess?: boolean;
+    error?: string;
+    message?: string;
+    title?: string;
+    type?: AccountType;
 }
